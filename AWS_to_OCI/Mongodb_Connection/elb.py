@@ -80,7 +80,7 @@ for index, row in df.iterrows():
             df.at[index, 'Comments'] = rule['comments']
             break 
         else:
-            continue 
+            continue
 
 
 df.to_excel("elb_Output.xlsx", index=False, engine="openpyxl")
@@ -90,4 +90,4 @@ os.startfile("elb_Output.xlsx")
 
 client.close()    
 
-
+#just to check the sync
