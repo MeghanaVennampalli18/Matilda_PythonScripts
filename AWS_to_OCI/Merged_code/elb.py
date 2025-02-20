@@ -8,7 +8,8 @@ def process_elb(df, collection):
         'query': {"name": "NetworkLoadBalancer"},
         'unit_price_field': 'pricePerUnitPerMonth', 
         'comments': "Network Load Balancer is Free in OCI",
-        'usage_divisor': 1
+        'usage_divisor': 1,
+        'sku_id':'serviceIdentifier'
     },
 
     {
@@ -16,14 +17,16 @@ def process_elb(df, collection):
         'query': {"name": "NetworkLoadBalancer"},
         'unit_price_field': 'pricePerUnitPerMonth', 
         'comments': "Inbound Data Transfer is Free in OCI",
-        'usage_divisor': 1
+        'usage_divisor': 1,
+        'sku_id':'serviceIdentifier'
     },
     {
         'condition': lambda row: row['line_item_operation'] in ['LoadBalancing:Application','LoadBalancing'] and row['pricing_unit'] in ['Hrs','LCU-Hrs'],
         'query': {"name": "Load Balancer Bandwidth"},
         'unit_price_field': 'pricePerGBPerMonthBase', 
         'comments': "$0.0113 for Oracle Cloud Infrastructure - Load Balancer Base - Load Balancer Hour",
-        'usage_divisor': 1
+        'usage_divisor': 1,
+        'sku_id':'serviceIdentifierBase'
     },
     {
         'condition': lambda row: row['line_item_operation'] in ['LoadBalancing','LoadBalancing-NLB-PublicIP-Out','LoadBalancing-PublicIP-Out'] and 
@@ -31,7 +34,8 @@ def process_elb(df, collection):
         'query': {"name": "Outbound Data Transfer - Originating in North America, Europe, and UK"},
         'unit_price_field': 'pricePerGBPerMonth', 
         'comments': "Outbound Data Transfer - Originating in North America, Europe, and UK",
-        'usage_divisor': 1000000
+        'usage_divisor': 1,
+        'sku_id':'serviceIdentifier'
     },
     {
         'condition': lambda row: row['line_item_operation']  in ['LoadBalancing','LoadBalancing-NLB-PublicIP-Out','LoadBalancing-PublicIP-Out'] and 
@@ -39,7 +43,8 @@ def process_elb(df, collection):
         'query': {"name": "Outbound Data Transfer - Originating in APAC, Japan, and South America"},
         'unit_price_field': 'pricePerGBPerMonth', 
         'comments': "Outbound Data Transfer - Originating in APAC, Japan, and South America",
-        'usage_divisor': 1000000
+        'usage_divisor': 1,
+        'sku_id':'serviceIdentifier'
     },
     {
         'condition': lambda row: row['line_item_operation'] in ['LoadBalancing','LoadBalancing-NLB-PublicIP-Out','LoadBalancing-PublicIP-Out'] and 
@@ -47,14 +52,16 @@ def process_elb(df, collection):
         'query': {"name": "Outbound Data Transfer - Originating in Middle East and Africa"},
         'unit_price_field': 'pricePerGBPerMonth', 
         'comments': "Outbound Data Transfer - Originating in Middle East and Africa",
-        'usage_divisor': 1000000
+        'usage_divisor': 1,
+        'sku_id':'serviceIdentifier'
     },
     {
         'condition': lambda row: 'regional' in row['line_item_line_item_description'],
         'query': {"name": "NetworkLoadBalancer"},
         'unit_price_field': 'pricePerUnitPerMonth', 
         'comments': "Regional Data Transfer is free in OCI",
-        'usage_divisor': 1
+        'usage_divisor': 1,
+        'sku_id':'serviceIdentifier'
     }
     ]
 
@@ -64,6 +71,7 @@ def process_elb(df, collection):
                 document = collection.find_one(rule['query'])
                 unit_price = document.get(rule['unit_price_field'], 0)
                 df.at[index, 'OCI Service'] = 'OCI Load Balancer'
+                df.at[index, 'SKU_ID'] = document.get(rule['sku_id'],'')
                 df.at[index, 'OCI Unit Price'] = unit_price
                 df.at[index, 'OCI Cost'] = row['SUM(line_item_usage_amount)'] * unit_price / rule['usage_divisor']
                 df.at[index, 'Comments'] = rule['comments']
